@@ -23,7 +23,7 @@ public class Cert {
 
 	/**
 	 * Verifies that all files not inside META-INF/ are signed. Verifies that
-	 * the certificate does not contain the word debug.
+	 * the certificate does not contain the word debug or default.
 	 * 
 	 * @param apkPath
 	 *            path to the apk to verify
@@ -62,9 +62,16 @@ public class Cert {
 					if (certificate instanceof X509Certificate) {
 						final String certName = ((X509Certificate) certificate)
 								.getSubjectDN().getName();
-						if (certName.toLowerCase().contains("debug")) {
+						final String lowerCert = certName.toLowerCase();
+						// Default android debug cert uses CN=Android Debug
+						if (lowerCert.contains("debug")) {
 							throw new CertException(
 									"Certificate contains Debug.\n" + certName);
+						}
+						// Eclipse export APK will use CN=default
+						if (lowerCert.contains("default")) {
+							throw new CertException(
+									"Certificate contains Default.\n" + certName);
 						}
 					}
 				}
